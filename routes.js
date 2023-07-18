@@ -122,7 +122,7 @@ router.post('/sendemailotp', async (req, res) => {
     console.log(req.body);
     const emailStat = await sendEmailOtp(req.body.email.toLowerCase());
     console.log('emailStat', emailStat);
-    if (emailStat === true) res.status(200).json({ message: "Email sent successfully" });
+    if (emailStat.length > 6) res.status(200).json({ message: "Email sent successfully" });
     else if (emailStat === 'limit') res.status(500).json({ 
         message: "OTP limit reached. Please contact jotref@mailo.com" 
     });
