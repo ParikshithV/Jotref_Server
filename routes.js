@@ -11,6 +11,7 @@ router.post('/post', (req, res) => {
         description: req.body.description,
         points: req.body.points,
         createdBy: req.body.userId,
+        isDraft: req.body.isDraft || false
     })
 
     try {
@@ -26,11 +27,22 @@ router.post('/post', (req, res) => {
 
 router.get('/getall', async (req, res) => {
     try {
-        // aggregate email from ProfileModel and include in list data
-        // foreignField _id is a objectId and localField createdBy is a string
-        // so we need to convert string to objectId using mongoose.Types.ObjectId during lookup
-
+        const offset = parseInt(req.query.offset);
+        const limit = parseInt(req.query.limit);
+        console.log('/getall', req.query)
+        // dont show drafts
         const data = await ListModel.aggregate([
+            {
+                $match: {
+                    isDraft: false
+                }
+            },
+            {
+                $skip: offset || 0,
+            },
+            {
+                $limit: limit || 10
+            },
             {
                 $lookup: {
                     from: "profiles",
@@ -65,6 +77,11 @@ router.get('/getall', async (req, res) => {
                     createdBy: 1,
                     isDraft: 1
                 }
+            },
+            {
+                $sort: {
+                    createdOn: -1
+                }
             }
         ]);
 
@@ -76,12 +93,21 @@ router.get('/getall', async (req, res) => {
 })
 
 router.get('/getuserlist', async (req, res) => {
-    const userId = req.query.id;
-    console.log(req.query);
+    const offset = parseInt(req.query.offset);
+    const limit = parseInt(req.query.limit);
+    const isDraft = req.query.isDraft || false;
+    const userId = req.query.userId;
+    console.log('/getuserlist', {
+        offset: offset,
+        limit: limit,
+        isDraft: isDraft,
+        userId: userId
+    });
     try {
         const data = await ListModel.find(
-            { createdBy: userId },
-            { title: 1, description: 1, points: 1, createdOn: 1, createdBy: 1 }
+            { createdBy: userId, isDraft: isDraft },
+            { title: 1, description: 1, points: 1, createdOn: 1, createdBy: 1 },
+            { skip: offset || 0, limit: limit || 10 }
         );
         res.json(data);
     }
@@ -123,10 +149,11 @@ router.post('/sendemailotp', async (req, res) => {
     const emailStat = await sendEmailOtp(req.body.email.toLowerCase());
     console.log('emailStat', emailStat);
     if (emailStat.length > 6) res.status(200).json({ message: "Email sent successfully" });
-    else if (emailStat === 'limit') res.status(500).json({ 
-        message: "OTP limit reached. Please contact jotref@mailo.com" 
+    else if (emailStat === 'limit') res.status(500).json({
+        message: "OTP limit reached. Please contact jotref@mailo.com"
     });
-    else res.status(500).json({ message: "Email not sent"});
+    else if (emailStat) res.status(200).json({ message: "Email not sent" });
+    else res.status(500).json({ message: "Email not sent" });
 })
 
 // verify email otp
