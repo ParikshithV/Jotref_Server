@@ -2,6 +2,7 @@ const express = require('express');
 const ListModel = require('./models/listModel');
 const ProfileModel = require('./models/profileModel');
 const { sendEmailOtp } = require('./methods/sendEmailOtp');
+const { ObjectId } = require('mongodb');
 const router = express.Router();
 
 router.post('/post', (req, res) => {
@@ -182,6 +183,64 @@ router.post('/verifyemailotp', async (req, res) => {
                 userId: userId
             });
         }
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+})
+
+// get single list by id
+router.get('/getlist', async (req, res) => {
+    const listId = req.query.listId;
+    console.log('/getlist', listId);
+    try {
+        // add createdBy email to list
+        const data = await ListModel.aggregate([
+            {
+                '$match': {
+                    '_id': new ObjectId('64b2e7b905b7182bfc8464a9')
+                }
+            }, {
+                '$lookup': {
+                    'from': 'profiles',
+                    'let': {
+                        'createdBy': '$createdBy'
+                    },
+                    'pipeline': [
+                        {
+                            '$match': {
+                                '$expr': {
+                                    '$eq': [
+                                        '$_id', {
+                                            '$toObjectId': '$$createdBy'
+                                        }
+                                    ]
+                                }
+                            }
+                        }, {
+                            '$project': {
+                                'email': 1,
+                                '_id': 0
+                            }
+                        }
+                    ],
+                    'as': 'createdBy'
+                }
+            }, {
+                '$unwind': '$createdBy'
+            }, {
+                '$project': {
+                    'title': 1,
+                    'description': 1,
+                    'points': 1,
+                    'createdOn': 1,
+                    'createdBy': 1,
+                    'isDraft': 1
+                }
+            }
+        ]);
+        console.log('data', data);
+        res.json(data);
     }
     catch (error) {
         res.status(500).json({ message: error.message })
