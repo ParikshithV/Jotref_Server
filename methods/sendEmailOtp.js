@@ -28,7 +28,7 @@ const emailHtml = (otp) => {
         `<div style="background-color: #f5f5f5; padding: 20px;">
             <div style="background-color: #fff; padding: 20px; border-radius: 10px;">
                 <h1 style="text-align: center;">Jotref</h1>
-                <p style="text-align: center;">Hi, this is from Jotref</p>
+                <p style="text-align: center;">Login OTP</p>
                 <h4 style="text-align: center; margin-top: 15px;">${otp}</h4>
             </div>
         </div>`
@@ -107,8 +107,8 @@ const sendEmailOtp = async (email) => {
         const info = await transporter.sendMail({
             from: process.env.EMAIL_ALIAS, // sender address
             to: email, // list of receivers
-            subject: "Jotref", // Subject line
-            // text: "Hi this is ", // plain text body
+            subject: "Jotref login", // Subject line
+            text: `Jotref login OTP: ${randomFourDigit}`, // plain text body
             html: emailHtml(randomFourDigit),
         });
 
