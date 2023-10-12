@@ -40,7 +40,7 @@ const sendEmailOtp = async (email) => {
     const randomFourDigit = Math.floor(1000 + Math.random() * 9000)
 
     const transporter = nodemailer.createTransport({
-        host: "mail.mailo.com",
+        host: process.env.EMAIL_END_POINT,
         port: 465,
         secure: true,
         auth: {
@@ -105,7 +105,7 @@ const sendEmailOtp = async (email) => {
         }
 
         const info = await transporter.sendMail({
-            from: process.env.EMAIL_ALIAS, // sender address
+            from: '"jotref" <jotref@parikshithv.in>',
             to: email, // list of receivers
             subject: "Jotref login", // Subject line
             text: `Jotref login OTP: ${randomFourDigit}`, // plain text body
