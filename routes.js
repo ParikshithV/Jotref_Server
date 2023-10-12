@@ -198,7 +198,7 @@ router.get('/getlist', async (req, res) => {
         const data = await ListModel.aggregate([
             {
                 '$match': {
-                    '_id': new ObjectId('64b2e7b905b7182bfc8464a9')
+                    '_id': new ObjectId(listId)
                 }
             }, {
                 '$lookup': {

@@ -1,13 +1,14 @@
 "use strict";
 
-import {env} from 'process';
+import { env } from 'process';
 
 const nodemailer = require("nodemailer");
 
 export const transporter = nodemailer.createTransport({
-  host: "mail.mailo.com",
+  host: "mail.mailo.com" + env.EMAIL_END_POINT,
   port: 465,
   secure: true,
+  from: '"jotref" <jotref@parikshithv.in>',
   auth: {
     user: env.EMAIL_ALIAS,
     pass: env.EMAIL_PASS
